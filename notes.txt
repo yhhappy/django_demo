@@ -65,6 +65,7 @@ pipenv shell
     c.python manage.py runserver ip:端口（如：python manage.py runserver 127.0.0.1:8888）
     d.pycharm专业版，可以创建启动器（Add configuration -> 点击+ -> 选择django server ->
         输入启动器名称 -> Fix -> 设置项目根路径和settings.py文件）
+    e.需要修改settings.py文件中 LANGUAGE_CODE = 'zh-hans'  TIME_ZONE = 'Asia/Shanghai'
 
 5.开启git版本管理
     a.Pycharm专业版可以打开vcs -> enable ... -> 选择git即可
