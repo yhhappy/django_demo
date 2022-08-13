@@ -1,0 +1,68 @@
+git国内镜像：
+https://registry.npmmirror.com/binary.html?path=git-for-windows/
+git查看配置信息
+git config -l
+
+
+国内厂商提供的pypi镜像目前可用的有：
+清华：https://pypi.tuna.tsinghua.edu.cn/simple
+阿里云：http://mirrors.aliyun.com/pypi/simple/
+中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/
+华中理工大学：http://pypi.hustunique.com/
+山东理工大学：http://pypi.sdutlinux.org/
+豆瓣：http://pypi.douban.com/simple/
+pip安装pipenv，指定镜像源：
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pipenv
+或者
+pip install pipenv -i https://pypi.tuna.tsinghua.edu.cn/simple
+设置默认镜像源：
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+输出结果：
+Writing to C:\Users\yanghang\AppData\Roaming\pip\pip.ini
+
+取消默认镜像源全局设置：
+pip config unset global.index-url
+
+创建python虚拟环境：
+pipenv shell
+
+
+一、虚拟环境
+1、创建虚拟环境
+方式一：
+    a.直接使用Pycharm专业版本创建虚拟环境（virtualenv、pipenv）
+    b.不推荐
+方式二：
+    手动创建
+    a.安装pipenv
+        pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pipenv
+    b.创建虚拟环境并进入到虚拟环境中
+        pipenv shell
+            1.如果当前路径下没有虚拟环境会自动创建，名称为：项目名-随机字符
+            2.如果在当前路径下，已经创建了虚拟环境，会直接进入到已创建的虚拟环境中
+    c.将解释器修改为虚拟环境中的解释器
+        1.查看解释器的路径
+            pipenv --venv
+        2.修改解释器
+            File -> settings -> project -> add -> ...
+二、搭建django项目工程
+1.修改pypi源（可选）
+    Pipfile文件中url
+
+2.下载django程序
+    a.直接使用pycharm下载（File -> settings -> project -> +），推荐
+    b.可以手动下载（打开terminal -> pipenv shell进入到虚拟环境中 -> pip install django或者pipenv install django）
+
+3.创建django项目工程
+    a.django-admin startproject 项目名 在当前所在路径下再创建一个新的项目（嵌套三级），不用
+    b.django-admin startproject 项目名 . 把当前所在路径当项目根路径（嵌套二级），推荐
+    c.项目名：一般与所在路径名一致
+
+4.启动django项目
+    a.进入到虚拟环境中（pipenv shell）
+    b.python manage.py runserver
+        默认监听127.0.0.1:8000
+    c.python manage.py runserver ip:端口（如：python manage.py runserver 127.0.0.1:8888）
+
+
+
