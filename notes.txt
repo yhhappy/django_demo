@@ -63,6 +63,55 @@ pipenv shell
     b.python manage.py runserver
         默认监听127.0.0.1:8000
     c.python manage.py runserver ip:端口（如：python manage.py runserver 127.0.0.1:8888）
+    d.pycharm专业版，可以创建启动器（Add configuration -> 点击+ -> 选择django server ->
+        输入启动器名称 -> Fix -> 设置项目根路径和settings.py文件）
 
+5.开启git版本管理
+    a.Pycharm专业版可以打开vcs -> enable ... -> 选择git即可
+    b.Pycharm社区版可以打开terminal -> git init
 
+三、提交版本
+1.将某些文件不进行版本管理
+    在项目根目录下创建.gitignore文件，将无需进行版本管理的文件或文件夹添加至.gitignore文件中
+2.将修改添加到暂存区
+    git add .
+3.将暂存区中的内容添加到本地仓库
+    1) git commit -m "注释"
+    2) git config --local user.name "用户名"
+    3) git config --local user.email "xxx@qq.com"
 
+四、django项目工程结构
+1.与项目同名的包django_project
+    __init__.py    为包文件
+    asgi.py        用于启动ASGI协议应用服务器的入口文件，在异步项目部署时使用
+    settings.py    用于存放django的全局配置信息
+    urls.py        用于创建全局路由信息
+    wsgi.py        用于启动WSGI协议应用服务器的入口文件，在部署时使用
+
+2.项目根路径下的文件
+    db.sqlite3    django项目自带的文本型数据库
+    manage.py     用于管理django项目的命令行工具
+
+五、子应用
+1.意义
+    1) 解耦：将各功能模块保持独立
+    2) 复用：方便各功能模块进行复用
+
+2.创建
+    方式一：python manage.py startapp 子应用名称
+    方式二：Tools -> Run manage.py Task (Pycharm专业版本)
+
+3.注册
+    1) 在settings.py中INSTALLED_APPS列表进行注册，如果不注册，那么当前模块就不可用
+    2) 注册方法，有两种
+        方式一：'子应用名'
+        方式二：'子应用名.apps.子应用名首字母大写Config'
+
+4.子应用结构
+    migrations     用于存放迁移脚本
+    __init__.py    为包文件
+    admin.py       用于配置admin后台管理站点
+    apps.py        用于配置子应用信息
+    models.py      用于定义模型类
+    tests.py       用于定义当前子应用的单元测试逻辑
+    views.py       用于定义子应用的业务逻辑实现
