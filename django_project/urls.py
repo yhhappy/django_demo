@@ -43,9 +43,10 @@ from projects import views
 urlpatterns = [
     # path('index/', views.index),
     # path('get_projects/', views.get_projects)
-    path('projects/', include('projects.urls')),
-    path('projects/<int:pk>/', include('projects.urls')),
-    re_path(r'^projects/(?P<pk>\w{3})/$', views.get_projects),
-    re_path(r'^projects/(?P<pk>\d+)/$', views.get_projects),
-    path('get_projects/', views.projects)
+    # path('projects/', include('projects.urls')),
+    # path('projects/<int:pk>/', include('projects.urls')),
+    # re_path(r'^projects/(?P<pk>\w{3})/$', views.get_projects),
+    # re_path(r'^projects/(?P<pk>\d+)/$', views.get_projects),
+    # path('get_projects/', views.projects)
+    path('projects/', views.ProjectsView.as_view())
 ]
