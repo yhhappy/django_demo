@@ -18,3 +18,26 @@ class Animal(models.Model):
     name = models.CharField(max_length=50)
     age = models.IntegerField()
     gender = models.BooleanField()
+
+
+class Projects(models.Model):
+    """
+    a. CharField类型必须指定max_length参数（该字段的最大字节数）
+    b. 如果需要给一个字段添加唯一约束，unique=True(默认为False)
+    c. 使用default指定默认值（如果指定默认值后，在创建记录时，该字段传递会使用默认值）
+    d. null=True指定前端创建数据时，可以指定该字段为null，默认为null=False，DRF进行反序列化器输入时才有效
+    e. blank=True指定前端创建数据时，可以指定该字段为空字符串，默认为blank=False，DRF进行反序列化器输入时才有效
+    f. 在DateTimeField、DateField等字段中，指定auto_now_add=True，在创建一条记录时，会自动创建记录时的时间作为该字段的值，后续再更新数据时，就不再修改
+    g. 在DateTimeField、DateField等字段中，指定auto_now=True，在更新一条记录时，会自动更新记录时的时间作为该字段的值
+    h. 可以在任意一个模型类中创建Meta内部类，用于修改数据库的元数据信息
+    i. db_table指定创建的数据表名称
+    """
+    name = models.CharField(max_length=20, verbose_name='项目名称', help_text='项目名称', unique=True)
+    leader = models.CharField(max_length=10, verbose_name='项目负责人', help_text='项目负责人')
+    is_execute = models.BooleanField(verbose_name='是否启动项目', help_text='是否启动项目', default=True)
+    desc = models.TextField(verbose_name='项目描述信息', help_text='项目描述信息', null=True, blank=True, default='')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间', help_text='创建时间')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间', help_text='更新时间')
+
+    class Meta:
+        db_table = 'tb_projects'
