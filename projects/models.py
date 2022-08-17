@@ -1,4 +1,5 @@
 from django.db import models
+from utils.base_model import BaseModel
 
 
 class Animal(models.Model):
@@ -20,7 +21,7 @@ class Animal(models.Model):
     gender = models.BooleanField()
 
 
-class Projects(models.Model):
+class Projects(BaseModel):
     """
     a. CharField类型必须指定max_length参数（该字段的最大字节数）
     b. 如果需要给一个字段添加唯一约束，unique=True(默认为False)
@@ -33,13 +34,13 @@ class Projects(models.Model):
     i. 在一个模型类中仅仅只能为一个字段指定primary_key=True，一旦在模型类中的某个字段上指定了primary_key=True，那么ORM框架就不会自动创建
     名称为id的主键
     """
-    ids = models.IntegerField(primary_key=True, verbose_name='项目主键', help_text='项目主键')
+    # ids = models.IntegerField(primary_key=True, verbose_name='项目主键', help_text='项目主键')
     name = models.CharField(max_length=20, verbose_name='项目名称', help_text='项目名称', unique=True)
     leader = models.CharField(max_length=10, verbose_name='项目负责人', help_text='项目负责人')
     is_execute = models.BooleanField(verbose_name='是否启动项目', help_text='是否启动项目', default=True)
     desc = models.TextField(verbose_name='项目描述信息', help_text='项目描述信息', null=True, blank=True, default='')
-    create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间', help_text='创建时间')
-    update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间', help_text='更新时间')
+    # create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间', help_text='创建时间')
+    # update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间', help_text='更新时间')
 
     class Meta:
         # db_table指定创建的数据表名称
@@ -47,3 +48,7 @@ class Projects(models.Model):
         # 为当前数据表设置中文描述信息
         verbose_name = '项目表'
         verbose_name_plural = '项目表'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"Projects({self.name})"

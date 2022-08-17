@@ -3,6 +3,8 @@ import json
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 from django.shortcuts import render
+from django.db import connection
+from projects.models import Projects
 
 
 # 在views.py中定义的函数，称为视图函数
@@ -74,29 +76,38 @@ class ProjectsView(View):
         2）前后端分离的开发模式
             后端结果返回的是数据(json、xml)
     """
-    def get(self, request, pk):
-        project_data = {
-            'id': 1,
-            'name': 'xxx项目',
-            'leader': 'yang'
-        }
-        project_data_list = [
-            {
-                'id': 1,
-                'name': 'xxx项目',
-                'leader': 'yang'
-            },
-            {
-                'id': 2,
-                'name': 'xxx项目',
-                'leader': 'hang'
-            }
-        ]
+    def get(self, request):
+        # 一、创建（C）
+        # 方式一：
+        # a.直接使用模型类
+        # obj = Projects(name='在线地产项目', leader='多喝热水')
+        # obj.save()
+        # 方式二：
+        obj = Projects.objects.create(name="xxx读书项目", leader="少喝凉水")
+        pass
+
+        # project_data = {
+        #     'id': 1,
+        #     'name': 'xxx项目',
+        #     'leader': 'yang'
+        # }
+        # project_data_list = [
+        #     {
+        #         'id': 1,
+        #         'name': 'xxx项目',
+        #         'leader': 'yang'
+        #     },
+        #     {
+        #         'id': 2,
+        #         'name': 'xxx项目',
+        #         'leader': 'hang'
+        #     }
+        # ]
         # json_str = json.dumps(project_data, ensure_ascii=False)
         # return HttpResponse(json_str, content_type='application/json', status=201)
         # return JsonResponse(project_data, json_dumps_params={'ensure_ascii': False})
-        print(request)
-        return JsonResponse(project_data_list, json_dumps_params={'ensure_ascii': False}, status=201, safe=False)
+        # print(request)
+        # return JsonResponse(project_data_list, json_dumps_params={'ensure_ascii': False}, status=201, safe=False)
 
     def post(self, request):
         """
