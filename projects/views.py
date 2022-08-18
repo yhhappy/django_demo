@@ -132,7 +132,28 @@ class ProjectsView(View):
             9.一般在查询类型前面加i，代表忽略大小写
         exclude为反向查询，filter方法支持的所有查询类型都支持
         """
-        qs = Projects.objects.filter(id__lte=2)
+        # qs = Projects.objects.filter(id__lte=2)
+        # pass
+        """
+        创建从表数据，外键对应的父表如何传递？
+        方式一：
+        1.先获取父表模型对象
+        2.将获取的父表模型对象以外键字段名作为参数来传递
+        project_obj = Projects.objects.get(name='在线图书项目')
+        Interfaces.objects.create(name='在线图书项目-登录接口', tester='呼呼', projects=project_obj)
+        方式二：
+        1.先获取父表模型对象，进而获取父表数据的id值
+        2.将父表数据的主键值以外键名_id作为参数来传递
+        project_obj = Projects.objects.get(name='在线金融项目')
+        Interfaces.objects.create(name='在线金融项目-注册接口', tester='呼呼', projects_id=project_obj.id)
+        
+        通过从表模型对象（已经获取到了），如何获取父表数据？
+        可以通过外键字段先获取父表模型对象
+        interface_obj = Interfaces.objects.get(id=1)
+        name = interface_obj.projects.name
+        通过父表模型对象（已经获取到了），如何获取从表数据？
+        """
+
         pass
         # project_data = {
         #     'id': 1,
