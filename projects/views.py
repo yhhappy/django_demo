@@ -5,6 +5,7 @@ from django.views import View
 from django.shortcuts import render
 from django.db import connection
 from projects.models import Projects
+from interfaces.models import Interfaces
 
 
 # 在views.py中定义的函数，称为视图函数
@@ -77,15 +78,62 @@ class ProjectsView(View):
             后端结果返回的是数据(json、xml)
     """
     def get(self, request):
-        # 一、创建（C）
-        # 方式一：
-        # a.直接使用模型类
-        # obj = Projects(name='在线地产项目', leader='多喝热水')
-        # obj.save()
-        # 方式二：
-        obj = Projects.objects.create(name="xxx读书项目", leader="少喝凉水")
-        pass
+        """
+        一、创建（C）
+        方式一：
+        a.直接使用模型类(字段名1=值1， 字段名2=值2...)，创建模型类实例
+        b.必须模型实例调用save()方法，才会执行sql语句
+        obj = Projects(name='在线地产项目', leader='多喝热水')
+        obj.save()
+        方式二：
+        a.使用模型类.objects返回manager对象
+        b.使用manager对象.create(字段名1=值1，字段名2=值2，...)，来创建模型类实例
+        c.无需使用模型实例调用save()方法，会自动执行sql语句
+        obj = Projects.objects.create(name="xxx地产项目", leader="少喝凉水")
+        """
 
+        """
+        二、读取(R)
+        1、读取多种数据
+        读取数据库中所有数据
+        a.使用模型类.objects.all()，会将当前模型类对应的数据表中的所有数据读取出来
+        b.模型类.objects.all()，返回QuerySet对象（查询集对象）
+        c.QuerySet对象，类似于列表，具有惰性查询的特性（在'用'数据时，才会执行sql语句）
+        qs = Projects.objects.all()
+        2、读取单条数据
+        a.可以使用模型类.objects.get(条件1=值1)
+        b.如果使用指定条件查询的记录数量为0，会抛出异常
+        c.如果使用指定条件查询的记录数量超过1，也会抛出异常
+        d.最好使用唯一约束的条件去查询
+        e.如果使用指定条件查询的记录数量为1，会返回这条记录对应的模型实例对象，可以使用模型对象.字段名去获取相应的字段值
+        obj = Projects.objects.get(id=1)
+        方式二：
+        a.可以使用模型类.objects.filter(条件1=值1)，返回QuerySet对象
+        b.如果使用指定条件查询的记录数量为0，会返回空的QuerySet对象
+        c.如果使用指定条件查询的记录数量超过1，将符合条件的模型对象包裹到QuerySet对象中返回
+        d.QuerySet对象类似于列表，有如下特性：
+            1.支持通过数组（正整数）索引取值
+            2.支持切片操作（正整数）
+            3.获取第一个模型对象：QuerySet对象.first()
+            4.获取最后一个模型对象：QuerySet对象.last()
+            5.获取长度：len(querySet对象)、querySet对象.count()
+            6.判断查询集是否为空：QuerySet对象.exists()
+            7.支持迭代操作（for循环，每次循环返回模型对象）
+        e.ORM框架中，会给每一个模型类中的主键设置一个别名（pk）
+        filter方法支持多种查询类型
+            1.字段名__查询类型=具体值
+            2.字段名__exact=具体值，缩写形式为：字段名=具体值
+            3.字段名__gt：大于、字段名__gte：大于等于
+            4.字段名__lt：小于、字段名__lte：小于等于
+            5.contains：包含
+            6.startswith：以xxx开头
+            7.endswith：以xxx结尾
+            8.isnull：是否为null
+            9.一般在查询类型前面加i，代表忽略大小写
+        exclude为反向查询，filter方法支持的所有查询类型都支持
+        """
+        qs = Projects.objects.filter(id__lte=2)
+        pass
         # project_data = {
         #     'id': 1,
         #     'name': 'xxx项目',
