@@ -153,7 +153,7 @@ class ProjectsView(View):
         name = interface_obj.projects.name
         通过父表模型对象（已经获取到了），如何获取从表数据？
         """
-
+        project_obj = Projects
         pass
         # project_data = {
         #     'id': 1,
