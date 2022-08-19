@@ -1,5 +1,6 @@
 import json
 
+from django.db.models import Q, Count, Avg, Max, manager, QuerySet
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 from django.shortcuts import render
@@ -151,9 +152,64 @@ class ProjectsView(View):
         可以通过外键字段先获取父表模型对象
         interface_obj = Interfaces.objects.get(id=1)
         name = interface_obj.projects.name
+        
         通过父表模型对象（已经获取到了），如何获取从表数据？
+        默认可以通过从表模型类名小写_set，返回manager对象，可以进一步使用filter进行过滤
+        project_obj = Projects.objects.get(id=1)
+        project_obj.interfaces_set.all()
+        如果在从表模型类的外键字段指定了related_name参数，related=inter,那么会使用related_name指定参数作为名称
+        project_obj = Projects.objects.get(id=1)
+        project_obj.inter.all()
+        
+        如果想要通过父表参数来获取从表数据、想要通过从表参数获取父表数据 --- 关联查询
+        可以使用关联查询语句：
+        关联字段名称_关联模型类中的字段名称_查询类型
+        Interfaces.objects.filter(projects__name__contains='图书')
+        Projects.objects.filter(interfaces__name__contains="登录")
+        
+        逻辑关系
+        与关系
+        方式一：
+        在同一个filter方法内部，添加多个关键字参数，那么每个条件是“与”关系
+        Projects.objects.filter(name__contains='图书', leader='少喝凉水')
+        方式二：
+        可以多次调用filter方法，那么filter方法的条件为“与”关系 --- QuerySet链式调用特性
+        Projects.objects.filter(name__contains='项目').filter(leader='多喝热水')
+        
+        或关系
+        可以使用Q查询，实现逻辑关系，多个Q对象之间如果使用“|”，那么为“或”关系
+        qs = Projects.objects.filter(Q(name__contains="图书") | Q(leader="多喝热水"))
+        
+        排序（QuerySet）
+        可以使用QuerySet对象（manager对象）.order_by('字段名1', '字段名2', '-字段3')
+        默认为ASC升序，可以在字段名称前添加“-”，那么为DESC降序
+        Projects.objects.filter(Q(name__contains="图书") | Q(leader="多喝热水")).order_by("-id", "leader")
+        
+        三、更新（U）
+        方式一：
+        project_obj = Projects.objects.get(id=1)
+        project_obj.name = "在线图书项目（一期）"
+        project_obj.leader = "哈哈"
+        1.必须调用save方法才会执行sql语句，并且默认进行完整更新
+        project_obj.save()
+        2.可以在save方法中设置update_fields参数（序列类型），指定需要更新的字段名称（字符串）
+        project_obj.save(update_fields=["name", "leader"])
+        方式二：
+        可以在QuerySet对象.update(字段名称=“字段值”)，返回修改成功的值，无需调用save方法
+        Projects.objects.filter(name__contains='金融').update(leader="金算盘")
+        
+        四、删除（D）
+        方式一：一条数据
+        project_obj = Projects.objects.get(id=1)
+        project_obj.delete()
+        方式二：多条数据
+        Projects.objects.filter(name__contains="图书").delete()
         """
-        project_obj = Projects
+        """
+        聚合运算
+        
+        """
+        Projects.objects.filter(name__contains="项目").aggregate(Count('id'))
         pass
         # project_data = {
         #     'id': 1,
