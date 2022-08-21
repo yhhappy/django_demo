@@ -7,6 +7,7 @@ from django.shortcuts import render
 from django.db import connection
 from projects.models import Projects
 from interfaces.models import Interfaces
+from projects.serializers import ProjectSerializer
 
 
 # 在views.py中定义的函数，称为视图函数
@@ -52,6 +53,22 @@ def projects(request):
 
 class ProjectsView(View):
     """
+    1.获取一条项目数据
+    GET /projects/<int:pk>/
+    2.获取所有项目数据
+    GET /projects/
+    数据库操作（读取所有项目数据） -> 序列化输出操作（将模型对象转化为python中的基本类型）
+    3.创建一条项目数据
+    POST /projects/ 将项目数据以json格式来传递
+    数据校验（规范传入的参数） -> 反序列化输入操作（将json格式的数据转化为复杂的类型） -> 数据库操作（创建项目数据）
+    -> 序列化输出操作（将模型对象转化为python中的基本类型）
+    4.更新一条项目数据
+    PUT /projects/<int:pk>/
+    5.删除一条项目数据
+    DELETE /projects/<int:pk>/
+    """
+
+    """
     一、定义类视图
     1、继承View或者View子类
     2、不同的请求方法有相应的方法进行对应
@@ -78,7 +95,31 @@ class ProjectsView(View):
         2）前后端分离的开发模式
             后端结果返回的是数据(json、xml)
     """
+
     def get(self, request):
+        # 获取所有项目数据
+        queryset = Projects.objects.all()
+        # project_list = []
+        # for item in queryset:
+        #     item: Projects
+        #     project_dict = {
+        #         'id': item.id,
+        #         'name': item.name,
+        #         'leader': item.leader
+        #     }
+        #     project_list.append(project_dict)
+        """
+        序列化器的使用
+        1.可以使用序列化器进行序列化输出操作
+            a.创建序列化器对象
+            b.可以将模型对象或者查询集对象、普通对象、嵌套普通对象的列表，以instance关键字来传递参数
+            c.如果传递的是查询集对象，嵌套普通对象的列表（多条数据），需要设置many=True
+            d.如果传递的是模型对象、普通对象，不需要设置many=True
+            f.可以使用序列化器对象的.data属性，获取序列化器之后的数据（字典、嵌套字典的列表）
+        """
+        serializer = ProjectSerializer(instance=queryset, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
         """
         一、创建（C）
         方式一：
@@ -92,7 +133,6 @@ class ProjectsView(View):
         c.无需使用模型实例调用save()方法，会自动执行sql语句
         obj = Projects.objects.create(name="xxx地产项目", leader="少喝凉水")
         """
-
         """
         二、读取(R)
         1、读取多种数据
@@ -207,10 +247,23 @@ class ProjectsView(View):
         """
         """
         聚合运算
-        
-        """
+        a.可以使用QuerySet对象，aggregate(聚合函数('字段名'))方法，返回字典数据
+        b.返回的字典数据中key为字段名__聚合函数名小写
+        c.可以使用关键字参数形式，那么返回的字典数据中key为关键字参数名
         Projects.objects.filter(name__contains="项目").aggregate(Count('id'))
-        pass
+        """
+        """
+        分组查询
+        a.可以使用QuerySet对象.values('父表主键id').annotate(聚合函数('从表模型类名小写'))
+        b.会自动连接两张表，然后使用外键字段作为分组条件
+        qs = Projects.objects.values('id').annotate(Count('interfaces'))
+        
+        查询集QuerySet有什么特性？
+        1.支持链式调用，可以在查询集上多次调用filter、exclude方法
+        2.惰性查询：仅仅在使用数据时才会执行sql语句，为了提升数据库读写性能
+        会执行sql语句的场景：len() count() 通过索引取值 print for
+        """
+
         # project_data = {
         #     'id': 1,
         #     'name': 'xxx项目',
@@ -266,11 +319,101 @@ class ProjectsView(View):
                 2） 如果参数名含有-，会自动转换为_
 
         """
-        print(request)
-        return HttpResponse('<h1>创建项目信息</h1>')
+        """
+        1.获取json参数并转化为Python中的数据类型（字典）
+        2.需要进行大量的数据校验
+            a.需要校验必传参数是否有传递
+            b.传递的有唯一约束的参数是否已存在
+            c.必穿参数长度是否超过限制
+            d.校验传参类型
+        3.创建数据
+        4.将创建成功的数据返回给前端
+        """
+        try:
+            python_data = json.loads(request.body)
+        except Exception as e:
+            return JsonResponse({"msg": "参数有误"}, status=400)
 
-    def put(self, request):
-        return HttpResponse('<h1>更新项目信息</h1>')
+        # project_data = Projects.objects.create(name=python_data.get("name"),
+        #                                        leader=python_data.get("leader"),
+        #                                        is_execute=python_data.get("is_execute"),
+        #                                        desc=python_data.get("desc"))
+        """
+        反序列化操作
+        1、定义序列化器类，使用data关键字参数传递字典参数
+        2、可以使用序列化器对象调用.is_valid()方法，才会开始对前端输入的参数进行校验
+        """
+        serializer_in = ProjectSerializer(data=python_data)
+        serializer_in.is_valid()
+        project_data = Projects.objects.create(**python_data)
+        python_dict = {
+            'id': project_data.id,
+            'name': project_data.name,
+            'msg': '创建成功'
+        }
 
-    def delete(self, request):
-        return HttpResponse('<h1>删除项目信息</h1>')
+        return JsonResponse(python_dict)
+
+
+class ProjectsDetailView(View):
+    """
+        1.获取一条项目数据
+        GET /projects/<int:pk>/
+        4.更新一条项目数据
+        PUT /projects/<int:pk>/
+        5.删除一条项目数据
+        DELETE /projects/<int:pk>/
+        """
+    def get(self, request, pk):
+        # 1.需要校验pk在数据库中是否存在
+        # 2.从数据库中读取项目数据
+        try:
+            python_data = Projects.objects.get(id=pk)
+        except Exception as e:
+            return JsonResponse({"msg": "参数有误"}, status=400)
+        # python_dict = {
+        #     'id': python_data.id,
+        #     'name': python_data.name,
+        #     'msg': '获取项目数据成功'
+        # }
+        serializer = ProjectSerializer(instance=python_data)
+        return JsonResponse(serializer.data)
+
+    def put(self, request, pk):
+        # 1.需要校验pk在数据库中是否存在
+        # 2.从数据库中读取项目数据
+        try:
+            project_obj = Projects.objects.get(id=pk)
+        except Exception as e:
+            return JsonResponse({"msg": "参数有误"}, status=400)
+        # 3.获取json数据并转化为python中的数据类型（字典）
+        try:
+            python_data = json.loads(request.body)
+        except Exception as e:
+            return JsonResponse({"msg": "参数有误"}, status=400)
+        # 4.更新数据
+        project_obj.name = python_data.get("name")
+        project_obj.leader = python_data.get("leader")
+        project_obj.is_execute = python_data.get("is_execute")
+        project_obj.desc = python_data.get("desc")
+        project_obj.save()
+        # 5.将读取的项目数据转为字典
+        python_dict = {
+            'id': project_obj.id,
+            'name': project_obj.name,
+            'msg': '获取项目数据成功'
+        }
+        return JsonResponse(python_dict)
+
+    def delete(self, request, pk):
+        try:
+            project_obj = Projects.objects.get(id=pk)
+        except Exception as e:
+            return JsonResponse({"msg": "参数有误"}, status=400)
+        project_obj = Projects.objects.get(id=pk)
+        project_obj.delete()
+        return JsonResponse({"msg": "删除成功"}, status=204)
+
+
+
+

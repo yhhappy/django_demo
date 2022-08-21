@@ -1,0 +1,20 @@
+RESTful是一种设计风格而不是标准
+是REpresentational State Transfer的缩写
+反序列化
+    将其他格式(json、xml等)转换为程序中的数据类型
+    将json格式的字符串转换为Django中的模型类对象
+序列化
+    将Django中的模型类对象转换为json格式
+
+Django REST framework
+在Django框架基础上，进行二次开发
+用于构建Restful API
+简称为DRF框架或者REST framework框架
+
+安装
+pip install djangorestframework
+pip install markdown
+配置
+INSTALLED_APPS = [
+    'rest_framework'
+]

@@ -48,5 +48,6 @@ urlpatterns = [
     # re_path(r'^projects/(?P<pk>\w{3})/$', views.get_projects),
     # re_path(r'^projects/(?P<pk>\d+)/$', views.get_projects),
     # path('get_projects/', views.projects)
-    path('projects/', views.ProjectsView.as_view())
+    path('projects/', views.ProjectsView.as_view()),
+    path('projects/<int:pk>/', views.ProjectsDetailView.as_view())
 ]
