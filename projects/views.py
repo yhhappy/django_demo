@@ -342,17 +342,23 @@ class ProjectsView(View):
         反序列化操作
         1、定义序列化器类，使用data关键字参数传递字典参数
         2、可以使用序列化器对象调用.is_valid()方法，才会开始对前端输入的参数进行校验
+        3、如果校验通过.is_valid()方法返回True，否则返回False
+        4、如果调用.is_valid()方法，添加raise_exception=True，校验不通过会抛出异常，否则不会抛出异常
+        5、只有在调用.is_valid()方法之后，才可以使用序列化器对象调用.errors属性，来获取错误提示信息（字典类型）
+        6、只有在调用.is_valid()方法之后，才可以使用序列化器对象调用.validated_data属性，来获取校验通过之后的数据
         """
         serializer_in = ProjectSerializer(data=python_data)
-        serializer_in.is_valid()
-        project_data = Projects.objects.create(**python_data)
-        python_dict = {
-            'id': project_data.id,
-            'name': project_data.name,
-            'msg': '创建成功'
-        }
+        if not serializer_in.is_valid():
+            return JsonResponse(serializer_in.errors, status=400)
 
-        return JsonResponse(python_dict)
+        Projects.objects.create(**serializer_in.validated_data)
+        # python_dict = {
+        #     'id': project_data.id,
+        #     'msg': '创建成功',
+        #     'name': project_data.name,
+        # }
+
+        return JsonResponse(serializer_in.data, safe=False)
 
 
 class ProjectsDetailView(View):
@@ -391,11 +397,14 @@ class ProjectsDetailView(View):
             python_data = json.loads(request.body)
         except Exception as e:
             return JsonResponse({"msg": "参数有误"}, status=400)
+        serializer_in = ProjectSerializer(data=python_data)
+        if not serializer_in.is_valid():
+            return JsonResponse(serializer_in.errors, status=400)
         # 4.更新数据
-        project_obj.name = python_data.get("name")
-        project_obj.leader = python_data.get("leader")
-        project_obj.is_execute = python_data.get("is_execute")
-        project_obj.desc = python_data.get("desc")
+        project_obj.name = serializer_in.validated_data.get("name")
+        project_obj.leader = serializer_in.validated_data.get("leader")
+        project_obj.is_execute = serializer_in.validated_data.get("is_execute")
+        project_obj.desc = serializer_in.validated_data.get("desc")
         project_obj.save()
         # 5.将读取的项目数据转为字典
         python_dict = {
