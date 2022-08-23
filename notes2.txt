@@ -19,6 +19,18 @@ INSTALLED_APPS = [
     'rest_framework'
 ]
 
+
+序列化器的使用
+1.可以使用序列化器进行序列化输出操作
+    a.创建序列化器对象
+    b.可以将模型对象或者查询集对象、普通对象、嵌套普通对象的列表，以instance关键字来传递参数
+    c.如果传递的是查询集对象，嵌套普通对象的列表（多条数据），需要设置many=True
+    d.如果传递的是模型对象、普通对象，不需要设置many=True
+    f.可以使用序列化器对象的.data属性，获取序列化器之后的数据（字典、嵌套字典的列表）
+
+
+
+
 class Comment:
     def __init__(self, email, content, created=None):
         self.email = email
