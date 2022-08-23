@@ -352,13 +352,7 @@ class ProjectsView(View):
             return JsonResponse(serializer_in.errors, status=400)
 
         Projects.objects.create(**serializer_in.validated_data)
-        # python_dict = {
-        #     'id': project_data.id,
-        #     'msg': '创建成功',
-        #     'name': project_data.name,
-        # }
-
-        return JsonResponse(serializer_in.data, safe=False)
+        return JsonResponse(serializer_in.data)
 
 
 class ProjectsDetailView(View):

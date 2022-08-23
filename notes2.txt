@@ -18,3 +18,14 @@ pip install markdown
 INSTALLED_APPS = [
     'rest_framework'
 ]
+
+class Comment:
+    def __init__(self, email, content, created=None):
+        self.email = email
+        self.content = content
+        self.created = created
+
+class CommentSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    content = serializers.CharField(max_length=20)
+    created = serializers.DateTimeField()
