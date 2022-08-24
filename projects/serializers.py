@@ -1,6 +1,7 @@
 from rest_framework import serializers
-
+from rest_framework.validators import UniqueValidator
 from interfaces.models import Interfaces
+from projects.models import Projects
 
 """
 一、序列化器
@@ -9,6 +10,17 @@ b.文件名推荐命名为serializers.py
 """
 
 
+# 自定义的序列化器类实际上也是Field子类
+# 所以自定义的序列化器类可以作为另一个序列化器中的字段来使用
+class InterfaceSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    tester = serializers.CharField()
+
+
+def is_contains_keyword(value):
+    if '项目' not in value:
+        raise serializers.ValidationError('项目名称中必须得')
 class ProjectSerializer(serializers.Serializer):
     """
     定义序列化器
@@ -39,13 +51,20 @@ class ProjectSerializer(serializers.Serializer):
     14.在序列化器类中定义的字段，可以使用default参数来指定默认值，如果指定了default参数，那么前端用户可以不用传递，
         会将default指定的值作为入参
     """
-    # id = serializers.IntegerField(label="项目id", help_text="项目id", max_value=1000, min_value=1)
-    # 可以在任意序列化器字段上使用error_messages来自定义错误提示信息，使用校验项名作为key，把具体错误信息作为value
+
+    """
+    可以在序列化器字段上使用validators指定自定义的校验规则
+    validators必须得为序列类型（列表），在列表中可以添加多个校验规则
+    DRF框架自带UniqueValidator校验器，必须得使用queryset指定查询集对象，用于对该字段进行校验
+    UniqueValidator校验器，可以使用message指定自定义报错信息
+    可以在任意序列化器字段上使用error_messages来自定义错误提示信息，使用校验项名作为key，把具体错误信息作为value
+    """
+    id = serializers.IntegerField(label="项目id", help_text="项目id", max_value=1000, min_value=1)
     name = serializers.CharField(label="项目名称", help_text="项目名称", max_length=20, min_length=5,
                                  error_messages={
                                      'min_length': '项目名称不能少于5位',
                                      'max_length': '项目名称不能超过20位'
-                                 })
+                                 }, validators=[UniqueValidator(queryset=Projects.objects.all(), message='项目名称不能重复')])
     leader = serializers.CharField(required=False, label="项目负责人", help_text="项目负责人", allow_null=True, default='默认')
     is_execute = serializers.BooleanField()
     # DatetimeFeild可以使用format参数指定格式化字符串
@@ -73,5 +92,5 @@ class ProjectSerializer(serializers.Serializer):
     2.如果指定了read_only=True，那么该字段仅序列化输出
     3.如果该字段需要进行反序列化输入，那么必须得指定queryset参数，同时关联字段必须有唯一约束
     """
-    inter = serializers.SlugRelatedField(slug_field='name', many=True, queryset=Interfaces.objects.all())
-
+    # inter = serializers.SlugRelatedField(slug_field='name', many=True, queryset=Interfaces.objects.all())
+    inter = InterfaceSerializer(label='所属接口信息', help_text='所属接口信息', read_only=True, many=True)
