@@ -17,10 +17,17 @@ class InterfaceSerializer(serializers.Serializer):
     name = serializers.CharField()
     tester = serializers.CharField()
 
-
+"""
+1.可以在类外自定义校验函数
+2.第一个参数为待校验的值
+3.如果校验不通过，必须得抛出serializers.ValidationError('报错信息')异常，同时可以指定具体的报错信息
+4.需要将校验函数名放到validators列表中
+"""
 def is_contains_keyword(value):
     if '项目' not in value:
-        raise serializers.ValidationError('项目名称中必须得')
+        raise serializers.ValidationError('项目名称中必须得包含“项目”关键字')
+
+
 class ProjectSerializer(serializers.Serializer):
     """
     定义序列化器
@@ -53,23 +60,50 @@ class ProjectSerializer(serializers.Serializer):
     """
 
     """
-    可以在序列化器字段上使用validators指定自定义的校验规则
-    validators必须得为序列类型（列表），在列表中可以添加多个校验规则
-    DRF框架自带UniqueValidator校验器，必须得使用queryset指定查询集对象，用于对该字段进行校验
-    UniqueValidator校验器，可以使用message指定自定义报错信息
     可以在任意序列化器字段上使用error_messages来自定义错误提示信息，使用校验项名作为key，把具体错误信息作为value
+    1.可以在序列化器字段上使用validators指定自定义的校验规则
+    2.validators必须得为序列类型（列表），在列表中可以添加多个校验规则
+    3.DRF框架自带UniqueValidator校验器，必须得使用queryset指定查询集对象，用于对该字段进行校验
+    4.UniqueValidator校验器，可以使用message指定自定义报错信息
+    5.校验规则的执行顺序？
+    对字段类型进行校验 -> 依次验证validators列表中的校验规则 -> 从右到左依次验证其他规则 -> 调用单字段校验方法
+    -> 调用多字段联合校验方法validate方法
     """
-    id = serializers.IntegerField(label="项目id", help_text="项目id", max_value=1000, min_value=1)
+    # id = serializers.IntegerField(label="项目id", help_text="项目id", max_value=1000, min_value=1)
     name = serializers.CharField(label="项目名称", help_text="项目名称", max_length=20, min_length=5,
                                  error_messages={
                                      'min_length': '项目名称不能少于5位',
                                      'max_length': '项目名称不能超过20位'
-                                 }, validators=[UniqueValidator(queryset=Projects.objects.all(), message='项目名称不能重复')])
+                                 }, validators=[UniqueValidator(queryset=Projects.objects.all(), message='项目名称不能重复'),
+                                                is_contains_keyword])
     leader = serializers.CharField(required=False, label="项目负责人", help_text="项目负责人", allow_null=True, default='默认')
     is_execute = serializers.BooleanField()
     # DatetimeFeild可以使用format参数指定格式化字符串
-    update_time = serializers.DateTimeField(label='更新时间', help_text='更新时间', format='%Y年%m月%d日 %H:%M:%S',
-                                            error_messages={'required': '该字段为必传参数'})
+    # update_time = serializers.DateTimeField(label='更新时间', help_text='更新时间', format='%Y年%m月%d日 %H:%M:%S',
+    #                                         error_messages={'required': '该字段为必传参数'})
+
+    """
+    1.可以在序列化器类中对单个字段进行校验
+    2.单字段的校验方法名称，必须把validate_作为前缀，加上待校验的字段名，如：validate_name
+    3.如果校验不通过，必须得返回serializers.ValidationError('具体报错信息')异常
+    4.如果校验通过，往往需要将校验之后的值返回
+    5.如果该字段在定义时添加的校验规则不通过，那么是不会调用单字段的校验方法
+    """
+    def validate_name(self, attr: str):
+        if not attr.endswith("项目"):
+            raise serializers.ValidationError('项目名称必须以“项目”结尾')
+        return attr
+
+    """
+    1.可以在序列化器类中对多个字段进行联合校验
+    2.使用固定的validate方法，会接收上面校验通过之后的字典数据
+    3.当所有字段定义时添加的校验规则都通过，且每个字段的单字段校验方法通过的情况下，才会调用validate
+    """
+    def validate(self, attrs: dict):
+        if len(attrs.get('leader')) <= 4 or not attrs.get('is_execute'):
+            raise serializers.ValidationError('项目负责人名称长度不能少于4位或者is_execute参数为False')
+        return attrs
+
     """
     一、关联字段
     1.可以定义PrimaryKeyRelatedField来获取关联表的外键值
